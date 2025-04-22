@@ -1,61 +1,78 @@
-const express = require('express');
-const router = express.Router();
+// ─── routes/notificationRoutes.js ────────────────────────────────────────────
+const express      = require('express');
+const router       = express.Router();
 const Notification = require('../models/Notification');
 
-// 📌 Lấy tất cả thông báo
+// 📌 Get all notifications (admin)
 router.get('/', async (req, res) => {
-    try {
-        const notifications = await Notification.find().populate('id_customer','fullname email phone')
-        .populate('id_employee','fullname email phone');
-        res.json(notifications);
-    } catch (error) {
-        res.status(500).json({ message: 'Lỗi khi lấy danh sách thông báo', error });
-    }
+  try {
+    const notifications = await Notification.find()
+      .populate('id_customer', 'fullname email phone')
+      .populate('id_employee', 'fullname email phone')
+      .sort({ create_date: -1 });
+    res.json(notifications);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching notifications', error });
+  }
 });
 
-// 📌 Lấy thông báo theo ID
+// 📌 Get notifications for one user (customer)
+router.get('/user/:userId', async (req, res) => {
+  try {
+    const notes = await Notification.find({ id_customer: req.params.userId })
+      .populate('id_employee', 'fullname')
+      .sort({ create_date: -1 });
+    res.json(notes);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching user notifications', error });
+  }
+});
+
+// 📌 Get single notification by ID
 router.get('/:id', async (req, res) => {
-    try {
-        const notification = await Notification.findById(req.params.id).populate('id_customer id_employee');
-        if (!notification) return res.status(404).json({ message: 'Không tìm thấy thông báo' });
-        res.json(notification);
-    } catch (error) {
-        res.status(500).json({ message: 'Lỗi khi lấy thông báo', error });
-    }
+  try {
+    const note = await Notification.findById(req.params.id)
+      .populate('id_customer', 'fullname email')
+      .populate('id_employee', 'fullname email');
+    if (!note) return res.status(404).json({ message: 'Not found' });
+    res.json(note);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching notification', error });
+  }
 });
 
-// 📌 Thêm thông báo mới
+// 📌 Create a new notification
 router.post('/', async (req, res) => {
-    try {
-        const { title, content, id_customer, id_employee, create_date, status } = req.body;
-        const newNotification = new Notification({ title, content, id_customer, id_employee, create_date, status });
-        await newNotification.save();
-        res.status(201).json({ message: 'Thông báo được tạo thành công', newNotification });
-    } catch (error) {
-        res.status(500).json({ message: 'Lỗi khi tạo thông báo', error });
-    }
+  try {
+    const { title, content, id_customer, id_employee, status } = req.body;
+    const note = new Notification({ title, content, id_customer, id_employee, status });
+    await note.save();
+    res.status(201).json({ message: 'Notification created', note });
+  } catch (error) {
+    res.status(500).json({ message: 'Error creating notification', error });
+  }
 });
 
-// 📌 Cập nhật thông báo
+// 📌 Update notification
 router.put('/:id', async (req, res) => {
-    try {
-        const updatedNotification = await Notification.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!updatedNotification) return res.status(404).json({ message: 'Không tìm thấy thông báo' });
-        res.json({ message: 'Cập nhật thành công', updatedNotification });
-    } catch (error) {
-        res.status(500).json({ message: 'Lỗi khi cập nhật thông báo', error });
-    }
+  try {
+    const note = await Notification.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!note) return res.status(404).json({ message: 'Not found' });
+    res.json({ message: 'Updated', note });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating notification', error });
+  }
 });
 
-// 📌 Xóa thông báo
+// 📌 Delete notification
 router.delete('/:id', async (req, res) => {
-    try {
-        const deletedNotification = await Notification.findByIdAndDelete(req.params.id);
-        if (!deletedNotification) return res.status(404).json({ message: 'Không tìm thấy thông báo' });
-        res.json({ message: 'Xóa thành công' });
-    } catch (error) {
-        res.status(500).json({ message: 'Lỗi khi xóa thông báo', error });
-    }
+  try {
+    const note = await Notification.findByIdAndDelete(req.params.id);
+    if (!note) return res.status(404).json({ message: 'Not found' });
+    res.json({ message: 'Deleted' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting notification', error });
+  }
 });
 
 module.exports = router;

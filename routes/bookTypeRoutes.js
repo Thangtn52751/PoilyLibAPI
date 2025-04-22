@@ -26,9 +26,12 @@ router.get('/:id', async (req, res) => {
 // 📌 Thêm loại sách mới
 router.post('/', async (req, res) => {
     try {
-        const typeBook = new TypeBook({
-            type: req.body.type
-        });
+        if (!req.body || !req.body.type) {
+            return res.status(400).json({ message: 'Body không hợp lệ hoặc thiếu trường type' });
+        }
+
+        const { type } = req.body;
+        const typeBook = new TypeBook({ type });
         const newTypeBook = await typeBook.save();
         res.status(201).json(newTypeBook);
     } catch (err) {
@@ -47,12 +50,12 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-// 📌 Xóa loại sách theo ID
+// 📌 Xoá loại sách
 router.delete('/:id', async (req, res) => {
     try {
         const deletedTypeBook = await TypeBook.findByIdAndDelete(req.params.id);
         if (!deletedTypeBook) return res.status(404).json({ message: 'Không tìm thấy loại sách' });
-        res.json({ message: 'Đã xóa loại sách' });
+        res.json({ message: 'Xoá thành công', deletedTypeBook });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

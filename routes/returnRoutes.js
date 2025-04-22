@@ -3,38 +3,54 @@ const Return = require('../models/Return');
 
 const router = express.Router();
 
-// Lấy danh sách trả sách
+// 📌 Lấy danh sách trả sách
 router.get('/', async (req, res) => {
   try {
     const data = await Return.find()
-      .populate('id_loans')
-      .populate('id_costumer', 'fullname email')
-      .populate('id_employee', 'fullname email');
+      .populate({ path: 'id_loans' }) // bạn có thể .select() nếu muốn
+      .populate({ path: 'id_costumer', select: 'fullname email' })
+      .populate({ path: 'id_employee', select: 'fullname email' });
+
     res.json(data);
   } catch (err) {
-    res.status(500).json({ message: 'Lỗi khi lấy danh sách trả sách', error: err });
+    console.error('Lỗi khi lấy danh sách trả sách:', err);
+    res.status(500).json({ message: 'Lỗi khi lấy danh sách trả sách', error: err.message || err });
   }
 });
 
-// Thêm mới trả sách
+// 📌 Thêm mới trả sách
 router.post('/', async (req, res) => {
   try {
     const { id_loans, return_date, penalty, id_costumer, id_employee } = req.body;
-    const newReturn = new Return({ id_loans, return_date, penalty, id_costumer, id_employee });
+
+    const newReturn = new Return({
+      id_loans,
+      return_date,
+      penalty,
+      id_costumer,
+      id_employee
+    });
+
     await newReturn.save();
+
     res.status(201).json({ message: 'Trả sách thành công!', data: newReturn });
   } catch (err) {
-    res.status(500).json({ message: 'Lỗi khi trả sách', error: err });
+    console.error('Lỗi khi trả sách:', err);
+    res.status(500).json({ message: 'Lỗi khi trả sách', error: err.message || err });
   }
 });
 
-// Xoá thông tin trả sách
+// 📌 Xoá thông tin trả sách
 router.delete('/:id', async (req, res) => {
   try {
-    await Return.findByIdAndDelete(req.params.id);
+    const deleted = await Return.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ message: 'Không tìm thấy bản ghi để xoá' });
+    }
     res.json({ message: 'Đã xoá thành công!' });
   } catch (err) {
-    res.status(500).json({ message: 'Lỗi khi xoá', error: err });
+    console.error('Lỗi khi xoá trả sách:', err);
+    res.status(500).json({ message: 'Lỗi khi xoá', error: err.message || err });
   }
 });
 

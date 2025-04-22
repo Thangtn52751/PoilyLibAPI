@@ -33,6 +33,8 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/regbooks', regBookRoutes);
 app.use('/api/returns', returnRoutes);
+app.use('/uploads', express.static('uploads')); 
+
 
 // Test API
 app.get('/', (req, res) => res.send('🚀 PolyLib API đang chạy!'));
