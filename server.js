@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const connectDB = require('./config/db');
 const mongoose = require('mongoose');
 
@@ -12,6 +13,8 @@ const notificationRoutes = require('./routes/notificationRoutes')
 const loanRoutes = require('./routes/loanRoutes');
 const regBookRoutes = require('./routes/regBookRoutes');
 const returnRoutes = require('./routes/returnRoutes');
+const cronRoutes = require('./routes/cronRoutes'); 
+const statisticsRouter = require('./routes/statisticsRoutes');
 
 // Kết nối MongoDB
 connectDB()
@@ -24,7 +27,7 @@ connectDB()
 const app = express();
 app.use(cors());
 app.use(express.json());
-
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Routes
 app.use('/api/books', bookRoutes);
 app.use('/api/bookTypes', bookTypeRoutes);
@@ -33,6 +36,8 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/regbooks', regBookRoutes);
 app.use('/api/returns', returnRoutes);
+app.use('/api/statistics', statisticsRouter);
+app.use('/api/cron', cronRoutes);
 app.use('/uploads', express.static('uploads')); 
 
 

@@ -9,15 +9,11 @@ const bookSchema = new mongoose.Schema({
   des: { type: String },
   quantity: { type: Number, required: true },
   image_url: { type: String },
-  ratings: [
-    {
-      userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-      username: String,
-      comment: String,
-      stars: Number,
-      createdAt: { type: Date, default: Date.now }
-    }
-  ]
+  status: {
+    type: String,
+    enum: ['new','old'],
+    default: 'new'
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Book', bookSchema);
